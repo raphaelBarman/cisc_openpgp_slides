@@ -1,0 +1,20 @@
+#+REVEAL_ROOT: ./reveal.js
+#+OPTIONS: toc:nil timestamp:nil num:nil reveal_title_slide:nil
+#+REVEAL_TRANS: linear
+#+REVEAL_THEME: moon
+* PGP integration with CISC
+* Welcome
+Here is my first slide
+* And another
+#+ATTR_REVEAL: :frag (appear)
+    1. I appear
+    2. I appear
+* Some tests
+#+ATTR_REVEAL: :frag (grow shrink roll-in fade-out none)
+   * I will grow.
+   * I will shrink.
+   * I rolled in.
+   * I will fade out.
+   * I don't fragment
+
+* image
