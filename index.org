@@ -5,7 +5,7 @@
 #+REVEAL_MULTIPLEX_ID: 912f5f4cb475d9ef
 #+REVEAL_MULTIPLEX_SECRET: 14844766394814264828
 #+REVEAL_MULTIPLEX_URL: https://reveal-js-multiplex-ccjbegmaii.now.sh
-#+REVEAL_MULTIPLEX_SOCKETIO_URL: http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js
+#+REVEAL_MULTIPLEX_SOCKETIO_URL: https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js
 #+REVEAL_PLUGINS: (highlight notes multiplex)
 #+REVEAL_EXTRA_JS: {src: "./mouseclick.js"}
 * PGP integration with CISC
