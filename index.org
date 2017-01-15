@@ -1,20 +1,280 @@
 #+REVEAL_ROOT: ./reveal.js
 #+OPTIONS: toc:nil timestamp:nil num:nil reveal_title_slide:nil
 #+REVEAL_TRANS: linear
-#+REVEAL_THEME: moon
+#+REVEAL_THEME: solarized
+#+REVEAL_MULTIPLEX_ID: 912f5f4cb475d9ef
+#+REVEAL_MULTIPLEX_SECRET: 14844766394814264828
+#+REVEAL_MULTIPLEX_URL: https://reveal-js-multiplex-ccjbegmaii.now.sh
+#+REVEAL_MULTIPLEX_SOCKETIO_URL: http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js
+#+REVEAL_PLUGINS: (highlight notes multiplex)
+#+REVEAL_EXTRA_JS: {src: "./mouseclick.js"}
 * PGP integration with CISC
-* Welcome
-Here is my first slide
-* And another
-#+ATTR_REVEAL: :frag (appear)
-    1. I appear
-    2. I appear
-* Some tests
-#+ATTR_REVEAL: :frag (grow shrink roll-in fade-out none)
-   * I will grow.
-   * I will shrink.
-   * I rolled in.
-   * I will fade out.
-   * I don't fragment
+#+BEGIN_NOTES
+Dedis project called CISC Identity Skipchain \Rightarrow goal manage identity on a cothority, simple to use, distributed, secure.
 
-* image
+Goal of this project = add support for PGP keys, before only SSH.
+#+END_NOTES
+* A little bit of background
+* PGP: what is it again?
+#+ATTR_REVEAL: :frag (appear)
+- Pretty Good Privacy.
+- Created by Phil Zimmermann in 1991.
+- Provides cryptographic privacy and authentication for data communication.
+- Based on asymmetric cryptography.
+- Internet Standard under the name of OpenPGP
+** Web of trust
+#+ATTR_HTML: :width 75% :height 75%
+[[./PGP%20trust.png]]
+* Blockchain
+ #+ATTR_REVEAL: :frag (appear)
+- Public log
+- Back-pointer
+- Provides data-integrity
+#+BEGIN_NOTES
+Blockchain if a (very) few words.
+
+- Public log, used to store data.
+- Back pointer = hash to previous block
+- Difficult to tamper \Rightarrow need to compromise big number of participant + all steps can be retraced and checked for consistency
+#+END_NOTES
+* Cothority and CoSi
+ #+ATTR_REVEAL: :frag (appear)
+- Goal: Replace centralized Authorities
+- Distributed set of server running set of services and protocols
+- Collective Signing (CoSi) protocol
+#+BEGIN_NOTES
+Cothority if a (very) few words.
+
+- Replace central Authorities by distributed Authorities \Rightarrow not a single point of failure
+- All servers running same services/protocols, can talk to each other
+- CoSi = leader propose statement, witnesses verify it, cosign statement \Rightarrow need threshold of witnesses for statement to be valid
+- Very scalable (32k instance = signing in a few seconds)
+#+END_NOTES
+* CISC
+ #+ATTR_REVEAL: :frag (appear)
+- CISC identity SkipChain
+- Goal: provide a simple and secure identity management service
+#+BEGIN_NOTES
+What we are working on.
+
+Help the user to manage her identities.
+#+END_NOTES
+#+REVEAL: split
+#+ATTR_HTML: :width 75% :height 75%
+[[./cisc.png]]
+#+BEGIN_NOTES
+Architecture of CISC
+
+1. User has manager devices
+  - Registered on the Cothority, identified by a pub/priv key pair
+  - Have voting power to modify/make request to the cothority
+2. Cothority-servers, set of server running the service
+  - Has a private special blockchain on them \Rightarrow contains identities of the User
+  - Client can make change request, will only be accepted if threshold of devices accept \Rightarrow prevent one compromised device making unwanted changes
+3. Clients, person wanting to identify/communicate with the user
+  - can be services (Github), IoT devices or real people (contacts)
+  - Can download blockchain and check user's identity
+
+Blockchain = double linked and called skipchain:
+- Backward link = same (hash)
+- Forward link, cannot be hash, since next block not known
+- Forward link = signature of threshold of manager devices + CoSi signature.
+- Allows for trust delegation from old keys to new keys
+  - Someone trusting old key  of client will be able to verify each step until the new head (new keys)
+  - Does not need to trust any intermediary.
+
+Current implementation SSH, goal, add PGP.
+#+END_NOTES
+* JVSS
+#+ATTR_REVEAL: :frag (appear)
+- Joint Verifiable Secret Sharing.
+- Can generate threshold digital signature for Schnorr signatures.
+- Two phase protocol.
+- Advantages: distributed signing, cheating detection, distributed trust, no one knows the long term secret.
+#+BEGIN_NOTES
+Two phases:
+- Setup: $n$ signers co-operate to create a random shared secret
+  - Use Pedersen’s non-interactive Verifiable Secret Sharing scheme
+  - Each signer serves the role of the 'dealer', producing $n$-share secret and send it to everyone else
+  - All $n$ shares combined into a global secret = long term shared secret \Rightarrow will be used after + signature will generate for its public key
+- Round (signing)
+  - Signers generate short term shared secret using same procedure
+  - Using both short term and long term, create verifiable signature iff $t$ signers (t =threshold)
+Advantages:
+- Can create easily verifiable signatures in a distributed manner
+- Can detect cheater since everyone plays the role of the dealer
+- Need to trust that less than $t$ shareholder have been compromised \Rightarrow if not the case, no one can know the long term shared secretR 
+#+END_NOTES
+
+* Problem:@@html:<br>@@Using PGP with more than one device...
+** What we want:
+#+ATTR_REVEAL: :frag (appear)
+- Being able to sign message from any device.
+- Being able to decrypt message from any device.
+- Not losing everything when a device is compromised.
+** Same key on every device?
+#+ATTR_REVEAL: :frag (appear)
+- We can sign and decrypt from any device!
+- But...
+- If one device is lost, the key is lost...
+- All the trust gained is lost!
+** Different key on each device?
+#+ATTR_REVEAL: :frag (appear)
+- If we lose one device, only the trust in this key is lost.
+- It becomes complicated to communicate with us...
+- Need to know every device we have to communicate with us.
+#+BEGIN_NOTES
+For authentication, other person needs to trust every key we have per device \Rightarrow not ideal at all...
+
+For decryption, even worse, need to encrypt with every key and send message several times or encrypt with one key and hope that we will read on this particular device...
+
+Different key on each device make more sense if key are sub-key
+#+END_NOTES
+** Sub-keys
+#+ATTR_REVEAL: :frag (appear)
+- Linked to a master key, same trust level.
+- Signing resolved!
+- Decryption still problematic...
+- In case of device loss, revocation of the sub-key.
+- What if there is a man-in-the-middle (freeze attack)?
+#+BEGIN_NOTES
+Create a master key, store it somewhere safe (USB key). We create a sub-key for each device. A sub-key is linked to our master key, thus if our master key is trusted so is our sub-key
+
+If we want to sign from any device, the signature will be trusted by someone trusting our master key
+
+Decryption still a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use...
+
+If we lose a device, we can revoke the sub-key without losing the master key.
+
+If man-in-the-middle dropping every revocation request \Rightarrow Neither revocation server nor people wanting to communicate have way of knowing...
+#+END_NOTES
+** Using skipchains
+#+ATTR_REVEAL: :frag (appear)
+- We use them to revoke and rotate the sub-keys.
+- List of valid sub-keys maintained in the skipchain.
+- Can define a maximum epoch for the block.
+- Solves the freeze attack!
+- But...
+- Not backward compatible 😞
+- Decryption not solved...
+#+BEGIN_NOTES
+When we want to revoke a sub-key, we just create a new block with the key removed.
+
+Then we can define a maximum epoch for the block, when there is no new block after a certain time, we can consider that there is a freeze attack occurring.
+
+This is not backward compatible, since person wanting to communicate needs to have knowledge of the skipchain in order to know if key is still valid...
+#+END_NOTES
+* Our solution: CISC and JVSS
+ #+ATTR_REVEAL: :frag (appear)
+- Split our PGP key on a cothority using secret sharing and JVSS
+  - Have one global public key, sent to PGP servers.
+  - Each conode only has a share of the key.
+- Use CISC to manage the list of authoritative devices
+#+BEGIN_NOTES
+Since each conode only has a share of the key, need threshold of compromised node in order to compromise key \Rightarrow should be a rare event since the cothority is mostly trustworthy.
+#+END_NOTES
+** Signing
+ #+ATTR_REVEAL: :frag (appear)
+- We make a signing request from any device.
+- Signature will appear to be signed by the split key.
+#+BEGIN_NOTES
+This way, we can generate from any device a signature with the same trust level as the split key \Rightarrow same as with sub-keys, but without the need of managing sub-keys.
+#+END_NOTES
+** Decryption
+ #+ATTR_REVEAL: :frag (appear)
+- Person wanting to communicate uses our publicly available public key.
+- Can request from any authorized device a decryption!
+** Device loss
+ #+ATTR_REVEAL: :frag (appear)
+- In case of device loss, revoke its access to CISC
+- Attacker can temporarily sign/decrypt
+- Key is not affected at all
+** Freeze attack
+Also using maximum epoch.
+** Backward compatibility
+ #+ATTR_REVEAL: :frag (appear)
+- Backward compatible.
+- Public key made available as usual.
+- Following skipchain only needed for added security (freeze attack)
+* Implementation in Cothority
+** Reality check
+ #+ATTR_REVEAL: :frag (appear)
+- Impossible with current implementation of JVSS to bring own key.
+- Threshold decryption not present in /dedis/crypto/.
+#+BEGIN_NOTES
+Solution: letting JVSS create the key for us, can still make it a sub-key of the key we used before.
+
+Not enough time to implement decryption...
+#+END_NOTES
+** Interfacing OpenPGP and /dedis/crypto/
+#+BEGIN_SRC go
+package openpgp
+#+END_SRC
+ #+ATTR_REVEAL: :frag (appear)
+- Straightforward using OpenPGP implementation of /golang/x/crypto/.
+- Able to create valid OpenPGP signature, public and private keys packet.
+- Modification in JVSS to use the same standard as EdDSA.
+#+BEGIN_NOTES
+Good job guys, implementation respects standards!
+
+Modification, simply changing hash + order of what is hashed
+#+END_NOTES
+** Separating the JVSS protocol
+#+BEGIN_SRC go
+package jvss
+#+END_SRC
+ #+ATTR_REVEAL: :frag (appear)
+- Setup protocol
+  - Creates a shared secret and a public key.
+  - Gives back Public key + encrypted share of secret.
+- Sign protocol
+  - Initialized with previously created shares.
+  - Makes round of signing using the shares.
+#+REVEAL: split
+** Creation of a JVSS service
+#+BEGIN_SRC go
+package jvss
+#+END_SRC
+ #+ATTR_REVEAL: :frag (appear)
+- Allows to save shares.
+- Used by other services to setup/sign.
+** Adding the JVSS service to the Identity service
+#+BEGIN_SRC go
+package identity
+#+END_SRC
+ #+ATTR_REVEAL: :frag (appear)
+- Adding logic for setup and signing 
+- Only allow authorized device to make requests
+** Adding everything to the CISC application
+#+BEGIN_SRC go
+package cisc
+#+END_SRC
+ #+ATTR_REVEAL: :frag (appear)
+- /pgp setup/ command
+- /pgp sign/ command
+- /pgp public/ command
+- /-arm/ flag
+* Benchmark
+#+BEGIN_NOTES
+Made on a single machine \Rightarrow may not be the same in real life.
+#+END_NOTES
+#+REVEAL: split
+#+ATTR_HTML: :width 75% :height 75%
+[[./latency.png]]
+#+BEGIN_NOTES
+#+END_NOTES
+#+REVEAL: split
+#+ATTR_HTML: :width 75% :height 75%
+[[./bandwidth.png]]
+#+BEGIN_NOTES
+#+END_NOTES
+#+REVEAL: split
+#+ATTR_HTML: :width 75% :height 75%
+[[./scaling.png]]
+#+BEGIN_NOTES
+#+END_NOTES
+* What's left to be done
+- Splitting user key with JVSS.
+- Threshold decryption.
+#+BEGIN_NOTES
+#+END_NOTES
