@@ -16,7 +16,7 @@ Goal of this project = add support for PGP keys, before only SSH.
 #+END_NOTES
 * A little bit of background
 * PGP
-#+ATTR_REVEAL: :frag (appear)
+  #+ATTR_REVEAL: :frag (appear)
 - Pretty Good Privacy.
 - Provides cryptographic privacy and authentication for data communication.
 - Web of trust: users act as CA.
@@ -26,57 +26,30 @@ Web of trust:
 - User usually need to prove its identity \Rightarrow ID card, driver license, etc.
 - Will trust that signature is from someone if trust someone who trusts it \Rightarrow trust delegation.
 #+END_NOTES
-** COMMENT Web of trust
-#+ATTR_HTML: :width 75% :height 75%
-[[./PGP%20trust.png]]
-* COMMENT Blockchain
- #+ATTR_REVEAL: :frag (appear)
-- Public log
-- Back-pointer
-- Provides data-integrity
-#+BEGIN_NOTES
-Blockchain if a (very) few words.
-
-- Public log, used to store data.
-- Back pointer = hash to previous block
-- Difficult to tamper \Rightarrow need to compromise big number of participant + all steps can be retraced and checked for consistency
-#+END_NOTES
-* COMMENT Cothority and CoSi
- #+ATTR_REVEAL: :frag (appear)
-- Goal: Replace centralized Authorities.
-- Distributed set of server running set of services and protocols.
-- Collective Signing (CoSi) protocol.
-#+BEGIN_NOTES
-Cothority if a (very) few words.
-
-- Replace central Authorities by distributed Authorities \Rightarrow not a single point of failure
-- All servers running same services/protocols, can talk to each other
-- CoSi = leader propose statement, witnesses verify it, cosign statement \Rightarrow need threshold of witnesses for statement to be valid
-- Very scalable (32k instance = signing in a few seconds)
-#+END_NOTES
 * JVSS
 #+ATTR_REVEAL: :frag (appear)
 - Joint Verifiable Secret Sharing.
-- Can generate threshold digital signature.
-- Two phase protocol.
-- Advantages: 
-  - distributed signing.
-  - cheating detection.
-  - distributed trust.
-  - no one knows the long term secret.
-#+BEGIN_NOTES
-Two phases:
-- Setup and round, in each phase, we create random shared secret
-- Random shared secret
-  - Each signer serves the role of the 'dealer', producing n-share secret and send it to everyone else
-  - All n shares combined into a global secret
-- In setup, create a long term secret \Rightarrow will always be used to sign + signature verifiable against its public part
-- Round, create short term secret \Rightarrow combined with long term to create signature iff t signers (= threshold)
-Advantages:
-- Can create easily verifiable signatures in a distributed manner
-- Can detect cheater since everyone plays the role of the dealer
-- Need to trust that less than $t$ shareholder have been compromised \Rightarrow if not the case, no one can know the long term shared secretR 
-#+END_NOTES
+- Can generate threshold digital signature in a distributed way.
+** Random shared secret generation
+Assuming $n$ signers and a threshold of $t$.
+#+ATTR_REVEAL: :frag (appear)
+- Each signer serves the role of the 'dealer'
+- Produces $n-$ shares secret, send share to others.
+- Every other signers verifies that the dealing has been made correctly.
+#+ATTR_REVEAL: :frag (appear)
+\Rightarrow allows to detect cheaters
+#+ATTR_REVEAL: :frag (appear)
+- When everyone has played the 'dealer' role, each signer combines the $n$ shares into a global secret.
+** Setup phase
+#+ATTR_REVEAL: :frag (appear)
+- Creation of a long term shared secret.
+- Will be used for every signing round.
+- Signature created can be checked against it.
+** Signing phase
+#+ATTR_REVEAL: :frag (appear)
+- Creation of a short term shared secret.
+- Combined with long term secret.
+- Generate a valid signature if at least $t$ signers.
 * CISC
  #+ATTR_REVEAL: :frag (appear)
 - CISC identity SkipChain.
@@ -145,27 +118,28 @@ If we lose a device, we can revoke the sub-key without losing the master key.
 
 Decryption becomes a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use...
 
+client not user !
 If man-in-the-middle dropping every revocation request \Rightarrow Neither revocation server nor people wanting to communicate have way of knowing...
 #+END_NOTES
 ** Using skipchains
 #+ATTR_REVEAL: :frag (appear)
-- We use them to revoke and rotate the sub-keys.
-- List of valid sub-keys maintained in the skipchain.
+- Latest valid key is placed in the skipchain
+- Trust displaced in the skipchain.
 - Can define a maximum epoch for the block.
 - Solves the freeze attack!
 - But...
-- Not backward compatible 😞
-- Decryption not solved...
+- Interlocutor needs to know how the skipchain works.
 #+BEGIN_NOTES
-When we want to revoke a sub-key, we just create a new block with the key removed.
+When we want to revoke a key, we just create a new block with the key removed (and maybe a new key), trust in the skipchain not to be compromised and have latest valid key.
 
 Then we can define a maximum epoch for the block, when there is no new block after a certain time, we can consider that there is a freeze attack occurring.
 
-This is not backward compatible, since person wanting to communicate needs to have knowledge of the skipchain in order to know if key is still valid...
+Person wanting to communicate needs to have knowledge of the skipchain in order to know if key is still valid...
 #+END_NOTES
 * Our solution: CISC and JVSS
  #+ATTR_REVEAL: :frag (appear)
 - Split our PGP key on a cothority using secret sharing and JVSS:
+ #+ATTR_REVEAL: :frag (appear)
   - Have one global public key, sent to PGP servers.
   - Each conode only has a share of the key.
 - Use CISC to manage the list of authoritative devices.
@@ -187,11 +161,13 @@ Same trust level as split key.
 - Attacker can temporarily sign/decrypt.
 - Key is not affected at all.
 - Also use maximum epoch for solving freeze attack.
-** Backward compatibility
+** Interoperability
  #+ATTR_REVEAL: :frag (appear)
-- Backward compatible.
 - Public key made available as usual.
 - Following skipchain only needed for added security (freeze attack).
+#+BEGIN_NOTES
+No need to follow the skipchain to contact the user with the correct key, since key doesn't change in case of compromised device.
+#+END_NOTES
 * Implementation in Cothority
 ** Reality check
  #+ATTR_REVEAL: :frag (appear)
@@ -274,6 +250,14 @@ Done with 16 hosts, looked most promising.
 With 32 clients and an interval of 15 seconds, takes less than 15 seconds \Rightarrow could mean that we could do around 130 signatures per minute.
 Equivalent to 200'000 signatures per day, estimating that average person at EPFL sends 10-20 e-mails. Implementation could provide decentralized secure e-mail for more or less the EPFL.
 #+END_NOTES
+#+REVEAL: split
+From last slide:
+#+ATTR_REVEAL: :frag (appear)
+- With 32 clients and an interval of 15 seconds, round takes less than 15 seconds.
+- We can make around 4 signatures/minute \times 32 clients \cong 130 signatures/minute.
+- 130 signatures/minute \times 60 minutes/hour \times 24 hours/day \cong 200'000 signatures/day.
+- Average EPFL user sends 10-20 mails per day.
+- We can provide all EPFL (15'000 people) decentralized and secure e-mail.
 * What's left to be done
  #+ATTR_REVEAL: :frag (appear)
 - Splitting user's key with JVSS.
