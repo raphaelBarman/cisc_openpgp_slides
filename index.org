@@ -18,15 +18,13 @@ Goal of this project = add support for PGP keys, before only SSH.
 * PGP
 #+ATTR_REVEAL: :frag (appear)
 - Pretty Good Privacy.
-- Created by Phil Zimmermann in 1991.
 - Provides cryptographic privacy and authentication for data communication.
-- Internet Standard under the name of OpenPGP
-- Web of trust: users act as CA
+- Web of trust: users act as CA.
 #+BEGIN_NOTES
 Web of trust:
-- Users sign each others key
+- Users sign each others key.
 - User usually need to prove its identity \Rightarrow ID card, driver license, etc.
-- Will trust that signature is from someone if trust someone who trusts it \Rightarrow trust delegation
+- Will trust that signature is from someone if trust someone who trusts it \Rightarrow trust delegation.
 #+END_NOTES
 ** COMMENT Web of trust
 #+ATTR_HTML: :width 75% :height 75%
@@ -45,9 +43,9 @@ Blockchain if a (very) few words.
 #+END_NOTES
 * COMMENT Cothority and CoSi
  #+ATTR_REVEAL: :frag (appear)
-- Goal: Replace centralized Authorities
-- Distributed set of server running set of services and protocols
-- Collective Signing (CoSi) protocol
+- Goal: Replace centralized Authorities.
+- Distributed set of server running set of services and protocols.
+- Collective Signing (CoSi) protocol.
 #+BEGIN_NOTES
 Cothority if a (very) few words.
 
@@ -61,16 +59,19 @@ Cothority if a (very) few words.
 - Joint Verifiable Secret Sharing.
 - Can generate threshold digital signature.
 - Two phase protocol.
-- Advantages: distributed signing, cheating detection, distributed trust, no one knows the long term secret.
+- Advantages: 
+  - distributed signing.
+  - cheating detection.
+  - distributed trust.
+  - no one knows the long term secret.
 #+BEGIN_NOTES
 Two phases:
-- Setup: $n$ signers co-operate to create a random shared secret
-  - Use Pedersen’s non-interactive Verifiable Secret Sharing scheme
-  - Each signer serves the role of the 'dealer', producing $n$-share secret and send it to everyone else
-  - All $n$ shares combined into a global secret = long term shared secret \Rightarrow will be used after + signature will generate for its public key
-- Round (signing)
-  - Signers generate short term shared secret using same procedure
-  - Using both short term and long term, create verifiable signature iff $t$ signers (t =threshold)
+- Setup and round, in each phase, we create random shared secret
+- Random shared secret
+  - Each signer serves the role of the 'dealer', producing n-share secret and send it to everyone else
+  - All n shares combined into a global secret
+- In setup, create a long term secret \Rightarrow will always be used to sign + signature verifiable against its public part
+- Round, create short term secret \Rightarrow combined with long term to create signature iff t signers (= threshold)
 Advantages:
 - Can create easily verifiable signatures in a distributed manner
 - Can detect cheater since everyone plays the role of the dealer
@@ -78,14 +79,14 @@ Advantages:
 #+END_NOTES
 * CISC
  #+ATTR_REVEAL: :frag (appear)
-- CISC identity SkipChain
-- Goal: provide a simple and secure identity management service
+- CISC identity SkipChain.
+- Goal: provide a simple and secure identity management service.
 #+BEGIN_NOTES
 What we are working on.
 
 Help the user to manage her identities.
 #+END_NOTES
-#+REVEAL: split
+** Architecture
 #+ATTR_HTML: :width 75% :height 75%
 [[./cisc.png]]
 #+BEGIN_NOTES
@@ -100,7 +101,12 @@ Architecture of CISC
 3. Clients, person wanting to identify/communicate with the user
   - can be services (Github), IoT devices or real people (contacts)
   - Can download blockchain and check user's identity
+#+END_NOTES
+** Skipchain
+#+ATTR_HTML: :width 75% :height 75%
+[[./skipchain.png]]
 
+#+BEGIN_NOTES
 Blockchain = double linked and called skipchain:
 - Backward link = same (hash)
 - Forward link, cannot be hash, since next block not known
@@ -128,19 +134,18 @@ Current implementation SSH, goal, add PGP.
 #+ATTR_REVEAL: :frag (appear)
 - Linked to a master key, same trust level.
 - Signing resolved!
-- Decryption still problematic...
-- It becomes complicated to communicate with us...
-- Need to know every device we have to communicate with us.
 - In case of device loss, revocation of the sub-key.
+- Decryption becomes problematic...
 - What if there is a man-in-the-middle (freeze attack)?
 #+BEGIN_NOTES
 Create a master key, store it somewhere safe (USB key). We create a sub-key for each device. A sub-key is linked to our master key, thus if our master key is trusted so is our sub-key
 
 If we want to sign from any device, the signature will be trusted by someone trusting our master key
 
-Decryption still a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use...
-
 If we lose a device, we can revoke the sub-key without losing the master key.
+
+Decryption becomes a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use...
+
 
 If man-in-the-middle dropping every revocation request \Rightarrow Neither revocation server nor people wanting to communicate have way of knowing...
 #+END_NOTES
@@ -162,36 +167,33 @@ This is not backward compatible, since person wanting to communicate needs to ha
 #+END_NOTES
 * Our solution: CISC and JVSS
  #+ATTR_REVEAL: :frag (appear)
-- Split our PGP key on a cothority using secret sharing and JVSS
+- Split our PGP key on a cothority using secret sharing and JVSS:
   - Have one global public key, sent to PGP servers.
   - Each conode only has a share of the key.
-- Use CISC to manage the list of authoritative devices
+- Use CISC to manage the list of authoritative devices.
 #+BEGIN_NOTES
 Since each conode only has a share of the key, need threshold of compromised node in order to compromise key \Rightarrow should be a rare event since the cothority is mostly trustworthy.
 #+END_NOTES
-** Signing
+** Signing and Decrypting
  #+ATTR_REVEAL: :frag (appear)
-- We make a signing request from any device.
-- Signature will appear to be signed by the split key.
+- Everything done using publicly available key.
+- Signature will appear to be signed by it.
+- Encryption can be made with it.
+- We can make a signing/decryption request from any device.
 #+BEGIN_NOTES
-This way, we can generate from any device a signature with the same trust level as the split key \Rightarrow same as with sub-keys, but without the need of managing sub-keys.
+Same trust level as split key.
 #+END_NOTES
-** Decryption
+** Device loss and freeze attack
  #+ATTR_REVEAL: :frag (appear)
-- Person wanting to communicate uses our publicly available public key.
-- Can request from any authorized device a decryption!
-** Device loss
- #+ATTR_REVEAL: :frag (appear)
-- In case of device loss, revoke its access to CISC
-- Attacker can temporarily sign/decrypt
-- Key is not affected at all
-** Freeze attack
-Also using maximum epoch.
+- In case of device loss, revoke its access to CISC.
+- Attacker can temporarily sign/decrypt.
+- Key is not affected at all.
+- Also use maximum epoch for solving freeze attack.
 ** Backward compatibility
  #+ATTR_REVEAL: :frag (appear)
 - Backward compatible.
 - Public key made available as usual.
-- Following skipchain only needed for added security (freeze attack)
+- Following skipchain only needed for added security (freeze attack).
 * Implementation in Cothority
 ** Reality check
  #+ATTR_REVEAL: :frag (appear)
@@ -209,63 +211,77 @@ package openpgp
  #+ATTR_REVEAL: :frag (appear)
 - Straightforward using OpenPGP implementation of /golang/x/crypto/.
 - Able to create valid OpenPGP signature, public and private keys packet.
-- Modification in JVSS to use the same standard as EdDSA.
 #+BEGIN_NOTES
-Good job guys, implementation respects standards!
-
-Modification, simply changing hash + order of what is hashed
+Dedis' implementation respects standards!
 #+END_NOTES
 ** JVSS protocol and JVSS service
 #+BEGIN_SRC go
 package jvss
 #+END_SRC
  #+ATTR_REVEAL: :frag (appear)
-- Separation of the JVSS protocol in two parts
-- Setup protocol
+- Separation of the JVSS protocol in two parts.
+- Setup protocol:
   - Creates a shared secret and a public key.
   - Gives back Public key + encrypted share of secret.
-- Sign protocol
+- Signing protocol:
   - Initialized with previously created shares.
   - Makes round of signing using the shares.
-- Service allows to save/load shares
-** Adding the JVSS service to the Identity service
+- Service allows to save/load shares.
+** COMMENT Adding the JVSS service to the Identity service
 #+BEGIN_SRC go
 package identity
 #+END_SRC
  #+ATTR_REVEAL: :frag (appear)
-- Adding logic for setup and signing 
-- Only allow authorized device to make requests
+- Adding logic for setup and signing.
+- Only allow authorized device to make requests.
 ** Adding everything to the CISC application
 #+BEGIN_SRC go
 package cisc
 #+END_SRC
- #+ATTR_REVEAL: :frag (appear)
-- /pgp setup/ command
-- /pgp sign/ command
-- /pgp public/ command
-- /-arm/ flag
+#+ATTR_REVEAL: :frag (appear)
+#+BEGIN_SRC go
+pgp setup
+#+END_SRC
+#+ATTR_REVEAL: :frag (appear)
+#+ATTR_REVEAL: :frag (appear)
+#+BEGIN_SRC go
+pgp sign
+#+END_SRC
 * Benchmark
 #+BEGIN_NOTES
 Made on a single machine \Rightarrow may not be the same in real life.
 #+END_NOTES
-#+REVEAL: split
+** Signing time with number of hosts
 #+ATTR_HTML: :width 75% :height 75%
 [[./latency.png]]
 #+BEGIN_NOTES
+Scaling of signing time with the number of hosts, quadratic due to JVSS O(n^2).
+
+16 or 32 hosts not that bad.
 #+END_NOTES
-#+REVEAL: split
+** COMMENT Bandwidth with number of hosts
 #+ATTR_HTML: :width 75% :height 75%
 [[./bandwidth.png]]
 #+BEGIN_NOTES
+Same with bandwidth, similar result.
 #+END_NOTES
-#+REVEAL: split
+** Scaling with number of clients (16 hosts)
 #+ATTR_HTML: :width 75% :height 75%
 [[./scaling.png]]
 #+BEGIN_NOTES
+Scaling with the number of clients and interval between each request per clients
+
+Done with 16 hosts, looked most promising.
+
+With 32 clients and an interval of 15 seconds, takes less than 15 seconds \Rightarrow could mean that we could do around 130 signatures per minute.
+Equivalent to 200'000 signatures per day, estimating that average person at EPFL sends 10-20 e-mails. Implementation could provide decentralized secure e-mail for more or less the EPFL.
 #+END_NOTES
 * What's left to be done
  #+ATTR_REVEAL: :frag (appear)
 - Splitting user's key with JVSS.
 - Threshold decryption.
 #+BEGIN_NOTES
+More convenient to use user's defined key.
+
+Decryption would be great to have.
 #+END_NOTES

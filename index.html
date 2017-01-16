@@ -51,10 +51,8 @@ Goal of this project = add support for PGP keys, before only SSH.
 <h2 id="orgheadline3">PGP</h2>
 <ul>
 <li class="fragment appear">Pretty Good Privacy.</li>
-<li class="fragment appear">Created by Phil Zimmermann in 1991.</li>
 <li class="fragment appear">Provides cryptographic privacy and authentication for data communication.</li>
-<li class="fragment appear">Internet Standard under the name of OpenPGP</li>
-<li class="fragment appear">Web of trust: users act as CA</li>
+<li class="fragment appear">Web of trust: users act as CA.</li>
 
 </ul>
 <aside class="notes">
@@ -62,9 +60,9 @@ Goal of this project = add support for PGP keys, before only SSH.
 Web of trust:
 </p>
 <ul>
-<li>Users sign each others key</li>
+<li>Users sign each others key.</li>
 <li>User usually need to prove its identity &rArr; ID card, driver license, etc.</li>
-<li>Will trust that signature is from someone if trust someone who trusts it &rArr; trust delegation</li>
+<li>Will trust that signature is from someone if trust someone who trusts it &rArr; trust delegation.</li>
 
 </ul>
 
@@ -78,7 +76,14 @@ Web of trust:
 <li class="fragment appear">Joint Verifiable Secret Sharing.</li>
 <li class="fragment appear">Can generate threshold digital signature.</li>
 <li class="fragment appear">Two phase protocol.</li>
-<li class="fragment appear">Advantages: distributed signing, cheating detection, distributed trust, no one knows the long term secret.</li>
+<li class="fragment appear">Advantages: 
+<ul>
+<li>distributed signing.</li>
+<li>cheating detection.</li>
+<li>distributed trust.</li>
+<li>no one knows the long term secret.</li>
+
+</ul></li>
 
 </ul>
 <aside class="notes">
@@ -86,19 +91,15 @@ Web of trust:
 Two phases:
 </p>
 <ul>
-<li>Setup: \(n\) signers co-operate to create a random shared secret
+<li>Setup and round, in each phase, we create random shared secret</li>
+<li>Random shared secret
 <ul>
-<li>Use Pedersen’s non-interactive Verifiable Secret Sharing scheme</li>
-<li>Each signer serves the role of the 'dealer', producing $n$-share secret and send it to everyone else</li>
-<li>All \(n\) shares combined into a global secret = long term shared secret &rArr; will be used after + signature will generate for its public key</li>
+<li>Each signer serves the role of the 'dealer', producing n-share secret and send it to everyone else</li>
+<li>All n shares combined into a global secret</li>
 
 </ul></li>
-<li>Round (signing)
-<ul>
-<li>Signers generate short term shared secret using same procedure</li>
-<li>Using both short term and long term, create verifiable signature iff \(t\) signers (t =threshold)</li>
-
-</ul></li>
+<li>In setup, create a long term secret &rArr; will always be used to sign + signature verifiable against its public part</li>
+<li>Round, create short term secret &rArr; combined with long term to create signature iff t signers (= threshold)</li>
 
 </ul>
 <p>
@@ -115,11 +116,11 @@ Advantages:
 </section>
 </section>
 <section>
-<section id="slide-orgheadline5">
-<h2 id="orgheadline5">CISC</h2>
+<section id="slide-orgheadline7">
+<h2 id="orgheadline7">CISC</h2>
 <ul>
-<li class="fragment appear">CISC identity SkipChain</li>
-<li class="fragment appear">Goal: provide a simple and secure identity management service</li>
+<li class="fragment appear">CISC identity SkipChain.</li>
+<li class="fragment appear">Goal: provide a simple and secure identity management service.</li>
 
 </ul>
 <aside class="notes">
@@ -133,7 +134,8 @@ Help the user to manage her identities.
 
 </aside>
 </section>
-<section >
+<section id="slide-orgheadline5">
+<h3 id="orgheadline5">Architecture</h3>
 
 <div class="figure">
 <p><img src="./cisc.png" alt="cisc.png" width="75%" height="75%" />
@@ -166,6 +168,17 @@ Architecture of CISC
 
 </ol>
 
+</aside>
+</section>
+<section id="slide-orgheadline6">
+<h3 id="orgheadline6">Skipchain</h3>
+
+<div class="figure">
+<p><img src="./skipchain.png" alt="skipchain.png" width="75%" height="75%" />
+</p>
+</div>
+
+<aside class="notes">
 <p>
 Blockchain = double linked and called skipchain:
 </p>
@@ -191,12 +204,12 @@ Current implementation SSH, goal, add PGP.
 </section>
 </section>
 <section>
-<section id="slide-orgheadline10">
-<h2 id="orgheadline10">Problem:<br>Using PGP with more than one device&#x2026;</h2>
-<div class="outline-text-2" id="text-orgheadline10">
+<section id="slide-orgheadline12">
+<h2 id="orgheadline12">Problem:<br>Using PGP with more than one device&#x2026;</h2>
+<div class="outline-text-2" id="text-orgheadline12">
 </div></section>
-<section id="slide-orgheadline6">
-<h3 id="orgheadline6">What we want:</h3>
+<section id="slide-orgheadline8">
+<h3 id="orgheadline8">What we want:</h3>
 <ul>
 <li class="fragment appear">Being able to sign message from any device.</li>
 <li class="fragment appear">Being able to decrypt message from any device.</li>
@@ -204,8 +217,8 @@ Current implementation SSH, goal, add PGP.
 
 </ul>
 </section>
-<section id="slide-orgheadline7">
-<h3 id="orgheadline7">Same key on every device?</h3>
+<section id="slide-orgheadline9">
+<h3 id="orgheadline9">Same key on every device?</h3>
 <ul>
 <li class="fragment appear">We can sign and decrypt from any device!</li>
 <li class="fragment appear">But&#x2026;</li>
@@ -214,15 +227,13 @@ Current implementation SSH, goal, add PGP.
 
 </ul>
 </section>
-<section id="slide-orgheadline8">
-<h3 id="orgheadline8">Sub-keys</h3>
+<section id="slide-orgheadline10">
+<h3 id="orgheadline10">Sub-keys</h3>
 <ul>
 <li class="fragment appear">Linked to a master key, same trust level.</li>
 <li class="fragment appear">Signing resolved!</li>
-<li class="fragment appear">Decryption still problematic&#x2026;</li>
-<li class="fragment appear">It becomes complicated to communicate with us&#x2026;</li>
-<li class="fragment appear">Need to know every device we have to communicate with us.</li>
 <li class="fragment appear">In case of device loss, revocation of the sub-key.</li>
+<li class="fragment appear">Decryption becomes problematic&#x2026;</li>
 <li class="fragment appear">What if there is a man-in-the-middle (freeze attack)?</li>
 
 </ul>
@@ -236,12 +247,13 @@ If we want to sign from any device, the signature will be trusted by someone tru
 </p>
 
 <p>
-Decryption still a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use&#x2026;
+If we lose a device, we can revoke the sub-key without losing the master key.
 </p>
 
 <p>
-If we lose a device, we can revoke the sub-key without losing the master key.
+Decryption becomes a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use&#x2026;
 </p>
+
 
 <p>
 If man-in-the-middle dropping every revocation request &rArr; Neither revocation server nor people wanting to communicate have way of knowing&#x2026;
@@ -249,8 +261,8 @@ If man-in-the-middle dropping every revocation request &rArr; Neither revocation
 
 </aside>
 </section>
-<section id="slide-orgheadline9">
-<h3 id="orgheadline9">Using skipchains</h3>
+<section id="slide-orgheadline11">
+<h3 id="orgheadline11">Using skipchains</h3>
 <ul>
 <li class="fragment appear">We use them to revoke and rotate the sub-keys.</li>
 <li class="fragment appear">List of valid sub-keys maintained in the skipchain.</li>
@@ -281,13 +293,13 @@ This is not backward compatible, since person wanting to communicate needs to ha
 <section id="slide-orgheadline16">
 <h2 id="orgheadline16">Our solution: CISC and JVSS</h2>
 <ul>
-<li class="fragment appear">Split our PGP key on a cothority using secret sharing and JVSS
+<li class="fragment appear">Split our PGP key on a cothority using secret sharing and JVSS:
 <ul>
 <li>Have one global public key, sent to PGP servers.</li>
 <li>Each conode only has a share of the key.</li>
 
 </ul></li>
-<li class="fragment appear">Use CISC to manage the list of authoritative devices</li>
+<li class="fragment appear">Use CISC to manage the list of authoritative devices.</li>
 
 </ul>
 <aside class="notes">
@@ -297,57 +309,46 @@ Since each conode only has a share of the key, need threshold of compromised nod
 
 </aside>
 </section>
-<section id="slide-orgheadline11">
-<h3 id="orgheadline11">Signing</h3>
+<section id="slide-orgheadline13">
+<h3 id="orgheadline13">Signing and Decrypting</h3>
 <ul>
-<li class="fragment appear">We make a signing request from any device.</li>
-<li class="fragment appear">Signature will appear to be signed by the split key.</li>
+<li class="fragment appear">Everything done using publicly available key.</li>
+<li class="fragment appear">Signature will appear to be signed by it.</li>
+<li class="fragment appear">Encryption can be made with it.</li>
+<li class="fragment appear">We can make a signing/decryption request from any device.</li>
 
 </ul>
 <aside class="notes">
 <p>
-This way, we can generate from any device a signature with the same trust level as the split key &rArr; same as with sub-keys, but without the need of managing sub-keys.
+Same trust level as split key.
 </p>
 
 </aside>
 </section>
-<section id="slide-orgheadline12">
-<h3 id="orgheadline12">Decryption</h3>
-<ul>
-<li class="fragment appear">Person wanting to communicate uses our publicly available public key.</li>
-<li class="fragment appear">Can request from any authorized device a decryption!</li>
-
-</ul>
-</section>
-<section id="slide-orgheadline13">
-<h3 id="orgheadline13">Device loss</h3>
-<ul>
-<li class="fragment appear">In case of device loss, revoke its access to CISC</li>
-<li class="fragment appear">Attacker can temporarily sign/decrypt</li>
-<li class="fragment appear">Key is not affected at all</li>
-
-</ul>
-</section>
 <section id="slide-orgheadline14">
-<h3 id="orgheadline14">Freeze attack</h3>
-<p>
-Also using maximum epoch.
-</p>
+<h3 id="orgheadline14">Device loss and freeze attack</h3>
+<ul>
+<li class="fragment appear">In case of device loss, revoke its access to CISC.</li>
+<li class="fragment appear">Attacker can temporarily sign/decrypt.</li>
+<li class="fragment appear">Key is not affected at all.</li>
+<li class="fragment appear">Also use maximum epoch for solving freeze attack.</li>
+
+</ul>
 </section>
 <section id="slide-orgheadline15">
 <h3 id="orgheadline15">Backward compatibility</h3>
 <ul>
 <li class="fragment appear">Backward compatible.</li>
 <li class="fragment appear">Public key made available as usual.</li>
-<li class="fragment appear">Following skipchain only needed for added security (freeze attack)</li>
+<li class="fragment appear">Following skipchain only needed for added security (freeze attack).</li>
 
 </ul>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline22">
-<h2 id="orgheadline22">Implementation in Cothority</h2>
-<div class="outline-text-2" id="text-orgheadline22">
+<section id="slide-orgheadline21">
+<h2 id="orgheadline21">Implementation in Cothority</h2>
+<div class="outline-text-2" id="text-orgheadline21">
 </div></section>
 <section id="slide-orgheadline17">
 <h3 id="orgheadline17">Reality check</h3>
@@ -377,16 +378,11 @@ Not enough time to implement decryption&#x2026;
 <ul>
 <li class="fragment appear">Straightforward using OpenPGP implementation of <i>golang/x/crypto</i>.</li>
 <li class="fragment appear">Able to create valid OpenPGP signature, public and private keys packet.</li>
-<li class="fragment appear">Modification in JVSS to use the same standard as EdDSA.</li>
 
 </ul>
 <aside class="notes">
 <p>
-Good job guys, implementation respects standards!
-</p>
-
-<p>
-Modification, simply changing hash + order of what is hashed
+Dedis' implementation respects standards!
 </p>
 
 </aside>
@@ -399,55 +395,45 @@ Modification, simply changing hash + order of what is hashed
 </code></pre>
 </div>
 <ul>
-<li class="fragment appear">Separation of the JVSS protocol in two parts</li>
-<li class="fragment appear">Setup protocol
+<li class="fragment appear">Separation of the JVSS protocol in two parts.</li>
+<li class="fragment appear">Setup protocol:
 <ul>
 <li>Creates a shared secret and a public key.</li>
 <li>Gives back Public key + encrypted share of secret.</li>
 
 </ul></li>
-<li class="fragment appear">Sign protocol
+<li class="fragment appear">Signing protocol:
 <ul>
 <li>Initialized with previously created shares.</li>
 <li>Makes round of signing using the shares.</li>
 
 </ul></li>
-<li class="fragment appear">Service allows to save/load shares</li>
+<li class="fragment appear">Service allows to save/load shares.</li>
 
 </ul>
 </section>
 <section id="slide-orgheadline20">
-<h3 id="orgheadline20">Adding the JVSS service to the Identity service</h3>
-<div class="org-src-container">
-
-<pre><code class="go" >package identity
-</code></pre>
-</div>
-<ul>
-<li class="fragment appear">Adding logic for setup and signing</li>
-<li class="fragment appear">Only allow authorized device to make requests</li>
-
-</ul>
-</section>
-<section id="slide-orgheadline21">
-<h3 id="orgheadline21">Adding everything to the CISC application</h3>
+<h3 id="orgheadline20">Adding everything to the CISC application</h3>
 <div class="org-src-container">
 
 <pre><code class="go" >package cisc
 </code></pre>
 </div>
-<ul>
-<li class="fragment appear"><i>pgp setup</i> command</li>
-<li class="fragment appear"><i>pgp sign</i> command</li>
-<li class="fragment appear"><i>pgp public</i> command</li>
-<li class="fragment appear"><i>-arm</i> flag</li>
+<div class="org-src-container">
 
-</ul>
+<pre class="fragment (appear)"><code class="go" >pgp setup
+</code></pre>
+</div>
+<div class="org-src-container">
+
+<pre class="fragment (appear)"><code class="go" >pgp sign
+</code></pre>
+</div>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline23">
-<h2 id="orgheadline23">Benchmark</h2>
+<section id="slide-orgheadline24">
+<h2 id="orgheadline24">Benchmark</h2>
 <aside class="notes">
 <p>
 Made on a single machine &rArr; may not be the same in real life.
@@ -455,47 +441,65 @@ Made on a single machine &rArr; may not be the same in real life.
 
 </aside>
 </section>
-<section >
+<section id="slide-orgheadline22">
+<h3 id="orgheadline22">Signing time with number of hosts</h3>
 
 <div class="figure">
 <p><img src="./latency.png" alt="latency.png" width="75%" height="75%" />
 </p>
 </div>
 <aside class="notes">
-nil
-</aside>
-</section>
-<section >
-
-<div class="figure">
-<p><img src="./bandwidth.png" alt="bandwidth.png" width="75%" height="75%" />
+<p>
+Scaling of signing time with the number of hosts, quadratic due to JVSS O(n<sup>2</sup>).
 </p>
-</div>
-<aside class="notes">
-nil
+
+<p>
+16 or 32 hosts not that bad.
+</p>
+
 </aside>
 </section>
-<section >
+<section id="slide-orgheadline23">
+<h3 id="orgheadline23">Scaling with number of clients (16 hosts)</h3>
 
 <div class="figure">
 <p><img src="./scaling.png" alt="scaling.png" width="75%" height="75%" />
 </p>
 </div>
 <aside class="notes">
-nil
+<p>
+Scaling with the number of clients and interval between each request per clients
+</p>
+
+<p>
+Done with 16 hosts, looked most promising.
+</p>
+
+<p>
+With 32 clients and an interval of 15 seconds, takes less than 15 seconds &rArr; could mean that we could do around 130 signatures per minute.
+Equivalent to 200'000 signatures per day, estimating that average person at EPFL sends 10-20 e-mails. Implementation could provide decentralized secure e-mail for more or less the EPFL.
+</p>
+
 </aside>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline24">
-<h2 id="orgheadline24">What's left to be done</h2>
+<section id="slide-orgheadline25">
+<h2 id="orgheadline25">What's left to be done</h2>
 <ul>
 <li class="fragment appear">Splitting user's key with JVSS.</li>
 <li class="fragment appear">Threshold decryption.</li>
 
 </ul>
 <aside class="notes">
-nil
+<p>
+More convenient to use user's defined key.
+</p>
+
+<p>
+Decryption would be great to have.
+</p>
+
 </aside>
 </section>
 </section>
