@@ -15,17 +15,23 @@ Dedis project called CISC Identity Skipchain \Rightarrow goal manage identity on
 Goal of this project = add support for PGP keys, before only SSH.
 #+END_NOTES
 * A little bit of background
-* PGP: what is it again?
+* PGP
 #+ATTR_REVEAL: :frag (appear)
 - Pretty Good Privacy.
 - Created by Phil Zimmermann in 1991.
 - Provides cryptographic privacy and authentication for data communication.
-- Based on asymmetric cryptography.
 - Internet Standard under the name of OpenPGP
-** Web of trust
+- Web of trust: users act as CA
+#+BEGIN_NOTES
+Web of trust:
+- Users sign each others key
+- User usually need to prove its identity \Rightarrow ID card, driver license, etc.
+- Will trust that signature is from someone if trust someone who trusts it \Rightarrow trust delegation
+#+END_NOTES
+** COMMENT Web of trust
 #+ATTR_HTML: :width 75% :height 75%
 [[./PGP%20trust.png]]
-* Blockchain
+* COMMENT Blockchain
  #+ATTR_REVEAL: :frag (appear)
 - Public log
 - Back-pointer
@@ -37,7 +43,7 @@ Blockchain if a (very) few words.
 - Back pointer = hash to previous block
 - Difficult to tamper \Rightarrow need to compromise big number of participant + all steps can be retraced and checked for consistency
 #+END_NOTES
-* Cothority and CoSi
+* COMMENT Cothority and CoSi
  #+ATTR_REVEAL: :frag (appear)
 - Goal: Replace centralized Authorities
 - Distributed set of server running set of services and protocols
@@ -49,6 +55,26 @@ Cothority if a (very) few words.
 - All servers running same services/protocols, can talk to each other
 - CoSi = leader propose statement, witnesses verify it, cosign statement \Rightarrow need threshold of witnesses for statement to be valid
 - Very scalable (32k instance = signing in a few seconds)
+#+END_NOTES
+* JVSS
+#+ATTR_REVEAL: :frag (appear)
+- Joint Verifiable Secret Sharing.
+- Can generate threshold digital signature.
+- Two phase protocol.
+- Advantages: distributed signing, cheating detection, distributed trust, no one knows the long term secret.
+#+BEGIN_NOTES
+Two phases:
+- Setup: $n$ signers co-operate to create a random shared secret
+  - Use Pedersen’s non-interactive Verifiable Secret Sharing scheme
+  - Each signer serves the role of the 'dealer', producing $n$-share secret and send it to everyone else
+  - All $n$ shares combined into a global secret = long term shared secret \Rightarrow will be used after + signature will generate for its public key
+- Round (signing)
+  - Signers generate short term shared secret using same procedure
+  - Using both short term and long term, create verifiable signature iff $t$ signers (t =threshold)
+Advantages:
+- Can create easily verifiable signatures in a distributed manner
+- Can detect cheater since everyone plays the role of the dealer
+- Need to trust that less than $t$ shareholder have been compromised \Rightarrow if not the case, no one can know the long term shared secretR 
 #+END_NOTES
 * CISC
  #+ATTR_REVEAL: :frag (appear)
@@ -66,7 +92,7 @@ Help the user to manage her identities.
 Architecture of CISC
 
 1. User has manager devices
-  - Registered on the Cothority, identified by a pub/priv key pair
+  - Registered on the Cothority, identified by a key pair
   - Have voting power to modify/make request to the cothority
 2. Cothority-servers, set of server running the service
   - Has a private special blockchain on them \Rightarrow contains identities of the User
@@ -85,26 +111,6 @@ Blockchain = double linked and called skipchain:
 
 Current implementation SSH, goal, add PGP.
 #+END_NOTES
-* JVSS
-#+ATTR_REVEAL: :frag (appear)
-- Joint Verifiable Secret Sharing.
-- Can generate threshold digital signature for Schnorr signatures.
-- Two phase protocol.
-- Advantages: distributed signing, cheating detection, distributed trust, no one knows the long term secret.
-#+BEGIN_NOTES
-Two phases:
-- Setup: $n$ signers co-operate to create a random shared secret
-  - Use Pedersen’s non-interactive Verifiable Secret Sharing scheme
-  - Each signer serves the role of the 'dealer', producing $n$-share secret and send it to everyone else
-  - All $n$ shares combined into a global secret = long term shared secret \Rightarrow will be used after + signature will generate for its public key
-- Round (signing)
-  - Signers generate short term shared secret using same procedure
-  - Using both short term and long term, create verifiable signature iff $t$ signers (t =threshold)
-Advantages:
-- Can create easily verifiable signatures in a distributed manner
-- Can detect cheater since everyone plays the role of the dealer
-- Need to trust that less than $t$ shareholder have been compromised \Rightarrow if not the case, no one can know the long term shared secretR 
-#+END_NOTES
 
 * Problem:@@html:<br>@@Using PGP with more than one device...
 ** What we want:
@@ -118,23 +124,13 @@ Advantages:
 - But...
 - If one device is lost, the key is lost...
 - All the trust gained is lost!
-** Different key on each device?
-#+ATTR_REVEAL: :frag (appear)
-- If we lose one device, only the trust in this key is lost.
-- It becomes complicated to communicate with us...
-- Need to know every device we have to communicate with us.
-#+BEGIN_NOTES
-For authentication, other person needs to trust every key we have per device \Rightarrow not ideal at all...
-
-For decryption, even worse, need to encrypt with every key and send message several times or encrypt with one key and hope that we will read on this particular device...
-
-Different key on each device make more sense if key are sub-key
-#+END_NOTES
 ** Sub-keys
 #+ATTR_REVEAL: :frag (appear)
 - Linked to a master key, same trust level.
 - Signing resolved!
 - Decryption still problematic...
+- It becomes complicated to communicate with us...
+- Need to know every device we have to communicate with us.
 - In case of device loss, revocation of the sub-key.
 - What if there is a man-in-the-middle (freeze attack)?
 #+BEGIN_NOTES
@@ -219,25 +215,19 @@ Good job guys, implementation respects standards!
 
 Modification, simply changing hash + order of what is hashed
 #+END_NOTES
-** Separating the JVSS protocol
+** JVSS protocol and JVSS service
 #+BEGIN_SRC go
 package jvss
 #+END_SRC
  #+ATTR_REVEAL: :frag (appear)
+- Separation of the JVSS protocol in two parts
 - Setup protocol
   - Creates a shared secret and a public key.
   - Gives back Public key + encrypted share of secret.
 - Sign protocol
   - Initialized with previously created shares.
   - Makes round of signing using the shares.
-#+REVEAL: split
-** Creation of a JVSS service
-#+BEGIN_SRC go
-package jvss
-#+END_SRC
- #+ATTR_REVEAL: :frag (appear)
-- Allows to save shares.
-- Used by other services to setup/sign.
+- Service allows to save/load shares
 ** Adding the JVSS service to the Identity service
 #+BEGIN_SRC go
 package identity
@@ -274,7 +264,8 @@ Made on a single machine \Rightarrow may not be the same in real life.
 #+BEGIN_NOTES
 #+END_NOTES
 * What's left to be done
-- Splitting user key with JVSS.
+ #+ATTR_REVEAL: :frag (appear)
+- Splitting user's key with JVSS.
 - Threshold decryption.
 #+BEGIN_NOTES
 #+END_NOTES
