@@ -211,8 +211,7 @@ Current implementation SSH, goal, add PGP.
 <section id="slide-orgheadline8">
 <h3 id="orgheadline8">What we want:</h3>
 <ul>
-<li class="fragment appear">Being able to sign message from any device.</li>
-<li class="fragment appear">Being able to decrypt message from any device.</li>
+<li class="fragment appear">Being able to sign and decrypt message from any device.</li>
 <li class="fragment appear">Not losing everything when a device is compromised.</li>
 
 </ul>
@@ -253,7 +252,6 @@ If we lose a device, we can revoke the sub-key without losing the master key.
 <p>
 Decryption becomes a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use&#x2026;
 </p>
-
 
 <p>
 If man-in-the-middle dropping every revocation request &rArr; Neither revocation server nor people wanting to communicate have way of knowing&#x2026;
@@ -310,7 +308,7 @@ Since each conode only has a share of the key, need threshold of compromised nod
 </aside>
 </section>
 <section id="slide-orgheadline13">
-<h3 id="orgheadline13">Signing and Decrypting</h3>
+<h3 id="orgheadline13">Signing and Decryption</h3>
 <ul>
 <li class="fragment appear">Everything done using publicly available key.</li>
 <li class="fragment appear">Signature will appear to be signed by it.</li>
@@ -399,7 +397,7 @@ Dedis' implementation respects standards!
 <li class="fragment appear">Setup protocol:
 <ul>
 <li>Creates a shared secret and a public key.</li>
-<li>Gives back Public key + encrypted share of secret.</li>
+<li>Sends to the service its secret share.</li>
 
 </ul></li>
 <li class="fragment appear">Signing protocol:

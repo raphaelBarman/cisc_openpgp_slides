@@ -121,8 +121,7 @@ Current implementation SSH, goal, add PGP.
 * Problem:@@html:<br>@@Using PGP with more than one device...
 ** What we want:
 #+ATTR_REVEAL: :frag (appear)
-- Being able to sign message from any device.
-- Being able to decrypt message from any device.
+- Being able to sign and decrypt message from any device.
 - Not losing everything when a device is compromised.
 ** Same key on every device?
 #+ATTR_REVEAL: :frag (appear)
@@ -145,7 +144,6 @@ If we want to sign from any device, the signature will be trusted by someone tru
 If we lose a device, we can revoke the sub-key without losing the master key.
 
 Decryption becomes a problem: other person needs to know of every sub-key, or risks to use different sub-key from device we use...
-
 
 If man-in-the-middle dropping every revocation request \Rightarrow Neither revocation server nor people wanting to communicate have way of knowing...
 #+END_NOTES
@@ -174,7 +172,7 @@ This is not backward compatible, since person wanting to communicate needs to ha
 #+BEGIN_NOTES
 Since each conode only has a share of the key, need threshold of compromised node in order to compromise key \Rightarrow should be a rare event since the cothority is mostly trustworthy.
 #+END_NOTES
-** Signing and Decrypting
+** Signing and Decryption
  #+ATTR_REVEAL: :frag (appear)
 - Everything done using publicly available key.
 - Signature will appear to be signed by it.
@@ -222,7 +220,7 @@ package jvss
 - Separation of the JVSS protocol in two parts.
 - Setup protocol:
   - Creates a shared secret and a public key.
-  - Gives back Public key + encrypted share of secret.
+  - Sends to the service its secret share.
 - Signing protocol:
   - Initialized with previously created shares.
   - Makes round of signing using the shares.
