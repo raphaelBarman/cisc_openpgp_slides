@@ -192,22 +192,17 @@ Dedis' implementation respects standards!
 #+BEGIN_SRC go
 package jvss
 #+END_SRC
- #+ATTR_REVEAL: :frag (appear)
+#+ATTR_REVEAL: :frag (appear)
 - Separation of the JVSS protocol in two parts.
 - Setup protocol:
+  #+ATTR_REVEAL: :frag (appear)
   - Creates a shared secret and a public key.
   - Sends to the service its secret share.
 - Signing protocol:
+  #+ATTR_REVEAL: :frag (appear)
   - Initialized with previously created shares.
   - Makes round of signing using the shares.
 - Service allows to save/load shares.
-** COMMENT Adding the JVSS service to the Identity service
-#+BEGIN_SRC go
-package identity
-#+END_SRC
- #+ATTR_REVEAL: :frag (appear)
-- Adding logic for setup and signing.
-- Only allow authorized device to make requests.
 ** Adding everything to the CISC application
 #+BEGIN_SRC go
 package cisc
@@ -232,12 +227,6 @@ Made on a single machine \Rightarrow may not be the same in real life.
 Scaling of signing time with the number of hosts, quadratic due to JVSS O(n^2).
 
 16 or 32 hosts not that bad.
-#+END_NOTES
-** COMMENT Bandwidth with number of hosts
-#+ATTR_HTML: :width 75% :height 75%
-[[./bandwidth.png]]
-#+BEGIN_NOTES
-Same with bandwidth, similar result.
 #+END_NOTES
 ** Scaling with number of clients (16 hosts)
 #+ATTR_HTML: :width 75% :height 75%
@@ -267,3 +256,4 @@ More convenient to use user's defined key.
 
 Decryption would be great to have.
 #+END_NOTES
+* Questions?
